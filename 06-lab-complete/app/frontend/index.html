@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Travel Planner AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="layout-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <button class="new-trip-btn" id="new-trip-btn">
+                    <i class="ph ph-plus"></i>
+                    <span>New Trip</span>
+                </button>
+                <button class="icon-btn hide-sidebar-btn" id="close-sidebar-btn" title="Đóng Sidebar">
+                    <i class="ph ph-arrows-out-line-horizontal"></i>
+                </button>
+            </div>
+            
+            <div class="history-list" id="history-list">
+                <!-- Chat sessions injected via JS -->
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">U</div>
+                    <span>User Account</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <button class="icon-btn toggle-sidebar-btn" id="open-sidebar-btn" title="Mở Sidebar">
+                    <i class="ph ph-list"></i>
+                </button>
+                <div class="header-title">
+                    Travel Planner AI
+                    <span class="status-dot"></span>
+                </div>
+                <div class="header-actions">
+                    <button class="icon-btn theme-toggle-btn" id="theme-toggle-btn" title="Đổi giao diện">
+                        <i class="ph ph-moon" id="theme-icon"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="chat-container" id="chat-container">
+                <!-- Welcome -->
+                <div class="message ai-message">
+                    <div class="avatar-ai"><i class="ph ph-sparkle"></i></div>
+                    <div class="message-content">
+                        <p class="typewriter-welcome"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area-wrapper">
+                <!-- Suggestion Prompts -->
+                <div class="suggested-prompts" id="suggested-prompts">
+                    <button class="prompt-chip" data-prompt="Mình có 1.500.000 VND, đi 2 người, xuất phát từ Hồ Xuân Hương, muốn đi Đà Lạt 1 ngày, chưa biết đi đâu, thích check-in và ăn uống rẻ.">
+                        <i class="ph ph-mountains"></i> Đà Lạt 1.5tr
+                    </button>
+                    <button class="prompt-chip" data-prompt="Mình có 3 triệu, đi 2 người, xuất phát từ Rạch Giá, muốn đi Kiên Giang 1 ngày, ưu tiên ăn hải sản và đi biển.">
+                        <i class="ph ph-waves"></i> Kiên Giang 2 người
+                    </button>
+                    <button class="prompt-chip" data-prompt="Mình có 2 triệu, đi 3 người, xuất phát từ Hội An, muốn đi Đà Nẵng 1 ngày, ưu tiên check-in và ăn uống rẻ.">
+                        <i class="ph ph-snowflake"></i> Đà Nẵng 2 triệu
+                    </button>
+                </div>
+
+                <div class="input-box">
+                    <button class="icon-btn attach-btn"><i class="ph ph-paperclip"></i></button>
+                    <textarea id="chat-input" placeholder="Nhập điểm đến, ngân sách và yêu cầu của bạn..." rows="1"></textarea>
+                    <button class="stop-btn hidden" id="stop-btn" title="Dừng tạo phản hồi"><i class="ph ph-stop"></i></button>
+                    <button class="send-btn" id="send-btn"><i class="ph ph-paper-plane-right"></i></button>
+                </div>
+                <div class="input-footer">AI có thể đưa ra kết quả không chính xác. Hãy kiểm tra lại ngân sách thực tế.</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Templates -->
+    <template id="tpl-user-msg">
+        <div class="message user-message">
+            <div class="message-content"></div>
+        </div>
+    </template>
+
+    <template id="tpl-skeleton">
+        <div class="message ai-message skeleton-message" id="loading-msg">
+            <div class="avatar-ai skeleton-pulse"></div>
+            <div class="message-content" style="background: transparent; border: none; padding: 0; box-shadow: none;">
+                <div class="skeleton-text skeleton-pulse" style="width: 80%"></div>
+                <div class="skeleton-text skeleton-pulse" style="width: 60%"></div>
+                <div class="skeleton-card skeleton-pulse mt-2" style="height: 60px;"></div>
+                <div class="skeleton-card skeleton-pulse mt-2" style="height: 120px;"></div>
+                <div class="skeleton-card skeleton-pulse mt-2" style="height: 200px;"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="tpl-happy-path">
+        <div class="message ai-message">
+            <div class="avatar-ai"><i class="ph ph-sparkle"></i></div>
+            <div class="message-content">
+                <p class="ai-text-response typewriter-target"></p>
+                
+                <!-- Weather Widget -->
+                <div class="weather-widget mt-2 fade-in hidden">
+                    <div class="weather-icon"><i class="ph ph-sun"></i></div>
+                    <div class="weather-info">
+                        <span class="weather-temp"><span class="w-deg">24</span>°C - <span class="dest-name"></span></span>
+                        <span class="weather-desc">Rất đẹp để đi dạo ngoài trời</span>
+                    </div>
+                </div>
+
+                <!-- Destination Images with Carousel -->
+                <div class="carousel-container mt-3 fade-in hidden" id="image-carousel">
+                    <button class="carousel-btn prev-btn"><i class="ph ph-caret-left"></i></button>
+                    <div class="image-gallery carousel-scroll">
+                        <!-- Images injected via JS -->
+                    </div>
+                    <button class="carousel-btn next-btn"><i class="ph ph-caret-right"></i></button>
+                </div>
+
+                <!-- Budget Breakdown -->
+                <div class="glass-card mt-3 fade-in hidden">
+                    <div class="budget-header">
+                        <span class="budget-title">Tổng chi phí dự kiến</span>
+                        <span class="budget-total text-success"><span class="total-amount">0</span>đ / <span class="max-budget">0</span>đ</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar food-bar" style="width: 0%" title="Ăn uống"></div>
+                        <div class="progress-bar transport-bar" style="width: 0%" title="Di chuyển"></div>
+                        <div class="progress-bar sight-bar" style="width: 0%" title="Tham quan"></div>
+                    </div>
+                    <div class="budget-legend">
+                        <span class="legend-item"><span class="dot dot-food"></span> Ăn uống</span>
+                        <span class="legend-item"><span class="dot dot-transport"></span> Di chuyển</span>
+                        <span class="legend-item"><span class="dot dot-sight"></span> Tham quan</span>
+                    </div>
+                </div>
+
+                <!-- Itinerary -->
+                <div class="glass-card mt-3 fade-in hidden">
+                    <h3 class="card-title"><i class="ph ph-map-trifold"></i> Lịch trình gợi ý</h3>
+                    <div class="timeline" id="timeline-container">
+                        <!-- Timeline Items injected via JS -->
+                    </div>
+                </div>
+
+                <!-- Reviews Section with Carousel -->
+                <div class="reviews-section mt-3 fade-in hidden">
+                    <h3 class="card-title"><i class="ph ph-star"></i> Review từ cộng đồng</h3>
+                    <div class="carousel-container" id="review-carousel">
+                        <button class="carousel-btn prev-btn"><i class="ph ph-caret-left"></i></button>
+                        <div class="reviews-scroll carousel-scroll" id="reviews-container">
+                            <!-- Reviews injected via JS -->
+                        </div>
+                        <button class="carousel-btn next-btn"><i class="ph ph-caret-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
