@@ -75,5 +75,5 @@ Dự án đã có sẵn file cấu hình [railway.toml](file:///c:/Users/LocND/D
 
 Sau khi quá trình deploy hoàn tất, Railway sẽ cấp phát một URL công khai. Vui lòng cập nhật đường dẫn API URL thực tế của bạn dưới đây:
 
-* **API URL Public Link**: `https://<ten-dich-vu-cua-ban>.up.railway.app`
-* **Health Check Public Link**: `https://<ten-dich-vu-cua-ban>.up.railway.app/health`
+* **API URL Public Link**: `https://day6-production.up.railway.app/`
+* **Health Check Public Link**: `https://day6-production.up.railway.app/health`
